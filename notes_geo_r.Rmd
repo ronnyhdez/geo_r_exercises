@@ -1,0 +1,104 @@
+---
+title: "Untitled"
+author: "Ronny A. Hernández Mora"
+date: "13/09/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(sf)
+library(terra)
+library(dplyr)
+library(stringr) # for working with strings (pattern matching)
+library(tidyr)   # for unite() and separate()
+library(spData)
+```
+
+
+```{r}
+dim(world)
+nrow(world)
+ncol(world)
+```
+
+To extract the attribute data from  an `sf`  object, we need to remove the
+geomeetry
+
+```{r}
+world_df <- st_drop_geometry(world)
+```
+
+All the workflow for sf objects can be done with the tidyverse, but there are
+son pitfalls that we should avoid. This are documented in the vignettes.
+
+```{r}
+sel_area <- world$area_km2 < 10000
+
+small_coutries <- world[sel_area, ]
+```
+
+Todos los ejemplos y explicaciones vienen siendo introductorios de dplyr y tidyr.
+Básicamente todo se puede manejar con lo que ya conocemos, tomando en cuenta
+unicamente la columna que trae las geometrías.
+
+## Manipulating raster objects
+
+This is different than the vector data model, given than a raster data represents
+continuos surfaces. Vector data is simple features that represents points, lines,
+and polyggons as discrete entities in space.
+
+This is a demonstration of how to create raste data:
+
+```{r}
+elev = rast(nrows = 6, ncols = 6, resolution = 0.5, 
+            xmin = -1.5, xmax = 1.5, ymin = -1.5, ymax = 1.5,
+            vals = 1:36)
+```
+
+```{r}
+grain_char = sample(elev, 36, replace = TRUE)
+grain_fact = factor(grain_char, levels = c("clay", "silt", "sand"))
+grain = rast(nrows = 6, ncols = 6, resolution = 0.5, 
+             xmin = -1.5, xmax = 1.5, ymin = -1.5, ymax = 1.5,
+             vals = grain_fact)
+```
+
+In order to do subsets, we have to use the base R sintax `[`
+
+```{r}
+elev[1, 1]
+```
+
+To extract all values or complete rows:
+
+```{r}
+r_multi <- c(elev, grain)
+
+# three ways to extract a layer of a stack
+terra::subset(r_multi, "elev")
+global(elev, sd)
+hist(elev)
+```
+
+
+# Makking maps with R
+
+```{r}
+library(sf)
+library(raster)
+library(dplyr)
+library(spData)
+library(spDataLarge)
+library(tmap)    # for static and interactive maps
+library(leaflet) # for interactive maps
+library(ggplot2) # tidyverse data visualization package
+```
+
+
+```{r}
+tm_shape
+```
+
